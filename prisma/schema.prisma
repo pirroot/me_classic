@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url = env("DATABASE_URL")
+}
+model Project {
+  id Int @id @default(autoincrement())
+  titleFa String
+  titleEn String @default("")
+  catFa String @default("")
+  descFa String @default("")
+  descEn String @default("")
+  stack String @default("")
+  url String @default("")
+  img String @default("")
+  sort Int @default(0)
+  published Boolean @default(true)
+}
+model Experience {
+  id Int @id @default(autoincrement())
+  companyFa String
+  companyEn String @default("")
+  periodFa String @default("")
+  periodEn String @default("")
+  roleFa String @default("")
+  roleEn String @default("")
+  descFa String @default("")
+  descEn String @default("")
+  stack String @default("")
+  sort Int @default(0)
+  published Boolean @default(true)
+}
+model Message {
+  id Int @id @default(autoincrement())
+  name String
+  email String
+  body String
+  read Boolean @default(false)
+  createdAt DateTime @default(now())
+}
+model Setting {
+  key String @id
+  value String
+}
+model Attempt {
+  ip String @id
+  fails Int @default(0)
+  lockedUntil DateTime?
+}
