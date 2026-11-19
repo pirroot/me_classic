@@ -1,29 +1,39 @@
 "use client";
 import { useEffect, useState } from "react";
 type A = any;
-function Clock() {
-  const [c, setC] = useState("--:--:--");
+
+function Clock({ en }: { en: boolean }) {
+  const [c, setC] = useState("");
   useEffect(() => {
-    const f = () =>
-      setC(
-        new Intl.DateTimeFormat("en-GB", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false,
-          timeZone: "Asia/Tehran",
-        }).format(new Date()),
-      );
+    const f = () => {
+      const d = new Date();
+      const loc = en ? "en-GB" : "fa-IR";
+      const date = new Intl.DateTimeFormat(loc, {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        timeZone: "Asia/Tehran",
+      }).format(d);
+      const time = new Intl.DateTimeFormat(loc, {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+        timeZone: "Asia/Tehran",
+      }).format(d);
+      setC(`${date} · ${time}`);
+    };
     f();
-    const i = setInterval(f, 1000);
+    const i = setInterval(f, 30000);
     return () => clearInterval(i);
-  }, []);
+  }, [en]);
   return (
     <span className="mono">
-      <span className="live" /> TEH {c}
+      <span className="live" /> {c}
     </span>
   );
 }
+
 function Type({ text }: { text: string }) {
   const [n, setN] = useState(0);
   useEffect(() => {
@@ -41,6 +51,7 @@ function Type({ text }: { text: string }) {
     </>
   );
 }
+
 export default function Site({
   s,
   projects,
@@ -105,13 +116,11 @@ export default function Site({
       ((e.clientY - r.top) / r.height) * 100 + "%",
     );
   };
-  const ov = (id: string, num: string, title: string, body: React.ReactNode) =>
+  const ov = (id: string, title: string, body: React.ReactNode) =>
     open === id && (
       <div className="ov">
         <div className="ovh">
-          <b className="mono">
-            ({num}) {title}
-          </b>
+          <b style={{ fontSize: "1.2rem" }}>{title}</b>
           <button
             className="btn"
             onClick={() => {
@@ -119,32 +128,33 @@ export default function Site({
               setOpen(null);
             }}
           >
-            {en ? "close [esc]" : "بستن [esc]"}
+            {en ? "Close [esc]" : "بستن [esc]"}
           </button>
         </div>
         <div className="ovb">{body}</div>
       </div>
     );
   const links = [
-    ["phone", s.phone, "tel:" + s.phone],
-    ["email", s.email, "mailto:" + s.email],
-    ["github", "github.com/" + s.github, "https://github.com/" + s.github],
-    ["telegram", "@" + s.telegram, "https://t.me/" + s.telegram],
+    [en ? "Phone" : "تلفن", s.phone, "tel:" + s.phone],
+    [en ? "Email" : "ایمیل", s.email, "mailto:" + s.email],
+    ["GitHub", "github.com/" + s.github, "https://github.com/" + s.github],
+    [
+      en ? "Telegram" : "تلگرام",
+      "@" + s.telegram,
+      "https://t.me/" + s.telegram,
+    ],
   ];
   const nav = [
-    ["exp", "01", en ? "Experience" : "سوابق"],
-    ["proj", "02", en ? "Projects" : "پروژه‌ها"],
-    ["contact", "03", en ? "Contact" : "ارتباط"],
+    ["exp", en ? "Experience" : "سوابق"],
+    ["proj", en ? "Projects" : "پروژه‌ها"],
+    ["contact", en ? "Contact" : "ارتباط"],
   ];
   return (
     <div className="site" dir={en ? "ltr" : "rtl"}>
-      <header className="top mono">
-        <b>
-          pirroot
-          <span className="cur" />
-        </b>
+      <header className="top">
+        <b style={{ fontSize: "1.1rem" }}>{t(s, "name")}</b>
         <span className="tr">
-          <Clock />
+          <Clock en={en} />
           <span className="lang">
             <button className={!en ? "on" : ""} onClick={() => setEn(false)}>
               FA
@@ -157,20 +167,15 @@ export default function Site({
       </header>
       <main className="hero">
         <div className="txt">
-          <p className="mono mute">
-            $ whoami
-            <span className="cur" />
-          </p>
           <h1>{t(s, "name")}</h1>
           <div className="role">
             <Type text={t(s, "role")} />
           </div>
-          <p className="mute tag">{t(s, "tagline")}</p>
+          <p className="tag">{t(s, "tagline")}</p>
           <nav className="acts">
-            {nav.map(([id, n, l]) => (
+            {nav.map(([id, l]) => (
               <button key={id} onClick={() => setOpen(id)}>
-                <span className="mono mute">({n})</span> <b>{l}</b>{" "}
-                <span className="mute">→</span>
+                <b>{l}</b>
               </button>
             ))}
           </nav>
@@ -195,40 +200,42 @@ export default function Site({
               onClick={() => setColor((v) => !v)}
             >
               <i className={color ? "d on" : "d"} />
-              {en ? "color" : "رنگ اصلی"}
+              {en ? "Color" : "رنگ اصلی"}
             </button>
           </div>
-          <p className="mono mute hint">
+          <p className="hint mute">
             {en
-              ? "hover the photo · keys: 1 2 3 · c · esc"
-              : "موس رو روی عکس ببر · کلیدها: 1 2 3 · c · esc"}
+              ? "Hover the photo for color. Keys: 1 2 3, c, esc"
+              : "موس رو روی عکس ببر. کلیدها: 1 2 3، c، esc"}
           </p>
         </div>
       </main>
       {ov(
         "exp",
-        "01",
-        nav[0][2],
-        exp.map((e) => (
-          <div className="card" key={e.id}>
-            <div className="row" style={{ border: 0, padding: 0 }}>
-              <b>{t(e, "company")}</b>
-              <span className="mono mute">{t(e, "period")}</span>
+        nav[0][1],
+        <div className="cols">
+          {exp.map((e) => (
+            <div className="card" key={e.id} style={{ breakInside: "avoid" }}>
+              <div className="row" style={{ border: 0, padding: 0 }}>
+                <b style={{ fontSize: "1.15rem" }}>{t(e, "company")}</b>
+                <span className="mono mute">{t(e, "period")}</span>
+              </div>
+              <div>
+                <i>{t(e, "role")}</i>
+              </div>
+              <p>{t(e, "desc")}</p>
+              {tags(e.stack)}
             </div>
-            <div>{t(e, "role")}</div>
-            <p className="mute">{t(e, "desc")}</p>
-            {tags(e.stack)}
-          </div>
-        )),
+          ))}
+        </div>,
       )}
       {ov(
         "proj",
-        "02",
-        nav[1][2],
+        nav[1][1],
         det ? (
           <div>
             <button className="btn" onClick={() => setDet(null)}>
-              {en ? "← back" : "→ برگشت"}
+              {en ? "Back" : "برگشت"}
             </button>
             {det.img && (
               <img
@@ -239,15 +246,22 @@ export default function Site({
                   maxHeight: 280,
                   objectFit: "cover",
                   margin: "16px 0",
-                  filter: "grayscale(1)",
+                  filter: "grayscale(1) contrast(1.2)",
                 }}
               />
             )}
-            <h2 style={{ fontSize: "clamp(1.8rem,5vw,3rem)" }}>
+            <h2
+              style={{
+                fontSize: "clamp(1.8rem,5vw,3rem)",
+                lineHeight: 1.15,
+                borderBottom: "3px double #161616",
+                paddingBottom: 8,
+              }}
+            >
               {t(det, "title")}
             </h2>
             <span className="bd">{det.catFa}</span>
-            <p style={{ maxWidth: "60ch" }}>{t(det, "desc")}</p>
+            <p className="cols">{t(det, "desc")}</p>
             <div>{tags(det.stack)}</div>
             {det.url && (
               <p>
@@ -257,7 +271,7 @@ export default function Site({
                   target="_blank"
                   rel="noopener"
                 >
-                  {en ? "view project →" : "مشاهده پروژه →"}
+                  {en ? "View project" : "مشاهده پروژه"}
                 </a>
               </p>
             )}
@@ -268,7 +282,7 @@ export default function Site({
               <span className="mono mute">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <b>{t(p, "title")}</b>
+              <b style={{ fontSize: "1.15rem" }}>{t(p, "title")}</b>
               <span className="bd">{p.catFa}</span>
             </div>
           ))
@@ -276,8 +290,7 @@ export default function Site({
       )}
       {ov(
         "contact",
-        "03",
-        nav[2][2],
+        nav[2][1],
         <div style={{ maxWidth: 560 }}>
           {links.map(([k, v, h]) => (
             <div className="row" key={k}>
